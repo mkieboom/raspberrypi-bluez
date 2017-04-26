@@ -1,0 +1,4 @@
+- name: Install and configure Bluez on Raspberry PI
+  hosts: all
+  roles:
+    - bluetooth 

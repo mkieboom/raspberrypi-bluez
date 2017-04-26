@@ -1,0 +1,77 @@
+---
+  - name: Run "apt-get update"
+    apt: update_cache=yes
+
+  - name: Install list of required packages
+    apt: name={{item}} state=present
+    with_items:
+         - git
+         - bc
+         - libusb-dev
+         - libdbus-1-dev
+         - libglib2.0-dev
+         - libudev-dev
+         - libical-dev
+         - libreadline-dev
+         - libbluetooth-dev
+
+  - name: Download Bluez
+    get_url:
+      url: "http://www.kernel.org/pub/linux/bluetooth/bluez-5.41.tar.xz"
+      dest: "/tmp/bluez-5.41.tar.xz"
+
+  - name: Extract Bluez
+    unarchive: src=/tmp/bluez-5.41.tar.xz dest=/tmp/ copy=no
+
+  - name: Download Bluez patch for Raspberry PI
+    get_url:
+      url: "https://gist.github.com/pelwell/c8230c48ea24698527cd/archive/3b07a1eb296862da889609a84f8e10b299b7442d.zip"
+      dest: "/tmp/3b07a1eb296862da889609a84f8e10b299b7442d.zip"
+
+  - name: Extract Bluez patch for Raspberry PI
+    unarchive: src=/tmp/3b07a1eb296862da889609a84f8e10b299b7442d.zip dest=/tmp/bluez-5.41/ copy=no
+
+  - name: Apply Bluez patch
+    shell: "git apply -v c8230c48ea24698527cd-3b07a1eb296862da889609a84f8e10b299b7442d/*"
+    args:
+      chdir: /tmp/bluez-5.41/
+
+  - name: Bluez - configure
+    shell: "./configure --prefix=/usr --mandir=/usr/share/man --sysconfdir=/etc --localstatedir=/var --enable-experimental --enable-tools --with-systemdsystemunitdir=/lib/systemd/system --with-systemduserunitdir=/usr/lib/systemd"
+    args:
+      chdir: /tmp/bluez-5.41/
+
+  - name: Bluez - make
+    make:
+      chdir: /tmp/bluez-5.41/
+
+  - name: Bluez - make install
+    make:
+      chdir: /tmp/bluez-5.41/
+      target: install
+
+  - name: Launch bluetooth service with --experimental
+    shell: "sed -ie 's|/usr/libexec/bluetooth/bluetoothd|/usr/libexec/bluetooth/bluetoothd --experimental|g' /lib/systemd/system/bluetooth.service"
+
+  - name: enable service bluetooth and ensure it is not masked
+    systemd:
+      name: bluetooth
+      enabled: yes
+      masked: no
+
+  - name: Download BCM43430A1.hcd into /lib/firmware/brcm
+    get_url:
+      url: "http://phelum.net/temp/BCM43430A1.hcd"
+      dest: "/lib/firmware/brcm/BCM43430A1.hcd"
+
+  - name: Insert commands to /etc/rc.local to launch Bluetooth on system startup
+    blockinfile:
+      path: /etc/rc.local
+      insertafter: "# rc.local"
+      content: |
+        hciattach /dev/ttyAMA0 bcm43xx 921600 noflow -
+        hciconfig hci0 up
+        systemctl restart bluetooth
+
+
+

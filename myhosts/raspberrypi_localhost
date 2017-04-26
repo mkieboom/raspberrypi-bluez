@@ -1,0 +1,3 @@
+# Cluster Node definition
+[nodes]
+localhost ansible_user=root ansible_become=yes ansible_become_method=sudo
