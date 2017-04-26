@@ -1,3 +1,6 @@
+###### Introduction
+This ansible project downloads, compiles and installs Bluez-5.41 including all pre-requisites on the Raspberry PI. To run, execute the following steps:
+
 ###### 1. login as 'pi' user
 
 ###### 2. Enable SSH server by launching raspi-config
