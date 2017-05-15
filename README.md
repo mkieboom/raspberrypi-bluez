@@ -14,13 +14,7 @@ Go to menu option "5 - Interfacing Options" and enable "P2 - SSH"
 sudo su -
 ```
 
-###### 4. Ansible requires SSH keyless to connect to run the script
-```
-ssh-keygen -t rsa -f /root/.ssh/id_rsa -q -P ""
-cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
-```
-
-###### 5. Install Ansible and Git
+###### 4. Install Ansible and Git
 ```
 echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main" >> /etc/apt/sources.list
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
@@ -28,18 +22,18 @@ apt-get update
 apt-get install -y ansible git
 ```
 
-###### 6. Clone the Raspberry PI Bluez github project
+###### 5. Clone the Raspberry PI Bluez github project
 ```
 git clone https://github.com/mkieboom/raspberrypi-bluez
 cd raspberrypi-bluez
 ```
 
-###### 7. Run the ansible scripts to install Bluez
+###### 6. Run the ansible scripts to install Bluez
 ```
-ansible-playbook -i myhosts/raspberrypi_localhost raspberrypi-deployment.yml
+ansible-playbook -i myhosts/raspberrypi_localhost raspberrypi-deployment.yml --connection=local
 ```
 
-###### 8. Reboot the Raspberry PI
+###### 7. Reboot the Raspberry PI
 ```
 reboot
 ```
